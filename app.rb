@@ -86,30 +86,3 @@ get '/intent' do
       end
     end
   end
-
-
-# number = []
-# prompt = ">"
-# breakline = "\n"
-# success = false
-# fijas = 0
-# while (!success)
-#   good_number = false
-
-
-#   print number
-#   puts breakline
-
-#   puts "Picas = #{picas} Fijas = #{fijas}"
-#   puts breakline
-#   if fijas == 4
-#     puts "Felicitaciones"
-#     success = true
-#     print "The number is: "
-#     i = 0
-#     until i == number.length
-#       print "#{number[i]} "
-#       i += 1
-#     end
-#   end
-# end

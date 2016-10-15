@@ -13,21 +13,3 @@
     </div>
   </div>
 </div>
-<% if cookies[:first_time] %>
-<div class="container">
-  <div class="row">
-    <div class="col-md-3">
-      <table class="table">
-        <%@array.each do |v|%>
-          <tr>
-            <td><%=v%></td>
-            <td><%=v%></td>
-            <td><%=v%></td>
-            <td><%=v%></td>
-          </tr>
-        <%end%>
-      </table>
-    </div>
-  </div>
-</div>
-<% end %>
