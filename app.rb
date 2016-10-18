@@ -4,97 +4,91 @@ require "active_support/all"
 require 'byebug'
 
 class Intent
-
   attr_accessor :picas,:fijas, :number
 
   def initialize (number)
     @picas = 0
     @fijas = 0
-    @number = number.to_i
+    @number = number.chars.map(&:to_i)
   end
 
-  def input_number
-    @number = @number.to_s.chars.map(&:to_i)
-    if (@number.uniq! != nil)        #Detect repeat @numbers
-      @number = true
+  def validation(level)
+    if(@number.length != level)           #Detect amount of digits
+      "level"
+    elsif(@number.uniq! != nil)           #Detect repeat @numbers
+      "number"
     end
   end
 
   def compare(master)
-    i = 0
-    j = 0
-    until i == @number.length
-      until j == @number.length
-        puts "i = #{i} j = #{j} master[i] = #{master[i]} @number[j] = #{@number[j]}"
+    @number.length.times do |i|
+      @number.length.times do |j|
         if (i == j && master[i] == @number[j])
-          puts "entro"
           @fijas += 1
         elsif master[i] == @number[j]
           @picas += 1
-          puts "entro @picas"
         end
-        j += 1
       end
-      i += 1
-      j = 0
     end
   end
-  end
-
-  def get_number
+  def self.get_number
     (0..9).to_a.shuffle
   end
-
-  def initialize_cookies
-    master_number = get_number
-    array_number = []
-    session[:array_number] = array_number
-    session[:master_number] = master_number
-    response.set_cookie(:first_time, true)
-  end
+end
 
 enable :sessions
 
   get '/' do
-    if cookies[:first_time]
-        @first_time = false
-        session[:first_time] = @first_time
-        @object_number = []
-        @object_number  = session[:array_number]
-        erb :index
-    else
+    if (session[:first_time] != nil)
+      @validation_flag = session{:validation}
       @first_time = true
-      puts @first_time
-      initialize_cookies
+      @object_number = []
+      @object_number  = session[:array_number]
+      puts "validation #{@validation_flag} first_time #{@first_time}"
+      erb :index
+    else
+      session[:array_number] = []
+      session[:master_number] = Intent.get_number
+      puts session[:master_number].inspect
+      @first_time = false
+      session[:first_time] = @first_time
+      session[:level_flag] = @first_time
       erb :index
     end
   end
 
   get '/intent' do
     @master_number = session[:master_number]
-    puts @master_number
     object = Intent.new(params[:number])
+    if (session[:level_flag] == false)
+      session[:level_flag] = true
+      session[:level] = params[:level].to_i
+    end
     @validation = ''
-    object.input_number
-    puts object.number
-      if object.number == true
-        @validation = 'Incorrect Number, the digits must be different'
-        @first_time = true
-        erb :index
+    error = object.validation(session[:level])
+    if error == "number"
+      @validation = 'Incorrect Number, the digits must be different'
+      session[:validation] = false
+      erb :index
+    elsif error == "level"
+      @validation = 'Incorrect Number, the different amount of digits according to the level'
+      session[:validation] = false
+      erb :index
+    else
+      session[:validation] = true
+      object.compare(@master_number)
+      if object.fijas == object.number.length
+        @number = object.number
+        session.clear
+        erb :winner
       else
-        object.compare(@master_number)
-        puts object
-        if object.fijas == object.number.length
-          cookies.delete(:first_time)
-          erb :winner
-        else
-          @object_number = []
-          @object_number  = session[:array_number]
-          @object_number << object
-          session[:array_number] = @object_number
-          @picas = object.picas
-          @fijas = object.fijas
-          erb :picas_fijas
-      end
+        @object_number = []
+        @object_number  = session[:array_number]
+        @object_number << object
+        session[:array_number] = @object_number
+        @picas = object.picas
+        @fijas = object.fijas
+        erb :picas_fijas
+    end
   end
 end
