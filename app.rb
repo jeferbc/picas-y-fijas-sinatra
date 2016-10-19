@@ -1,7 +1,4 @@
 require 'sinatra'
-require "sinatra/cookies"
-require "active_support/all"
-require 'byebug'
 
 class Intent
   attr_accessor :picas,:fijas, :number
@@ -71,7 +68,7 @@ enable :sessions
       session[:validation] = false
       erb :index
     elsif error == "level"
-      @validation = 'Incorrect Number, the different amount of digits according to the level'
+      @validation = "Incorrect Number, the number must have #{session[:level]} digits"
       session[:validation] = false
       erb :index
     else
